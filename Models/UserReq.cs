@@ -11,7 +11,7 @@ namespace Csharp_Code_Challenge_Submission.Models
         public required string Username { get; set; }
 
         [Required(ErrorMessage = "Username is required")]
-        [MinLength(8, ErrorMessage = "Username must be at least 8 characters long")]
+        [MinLength(8, ErrorMessage = "Username must be at least 8 characters long and have at least one uppercase, one lowercase, one symbol, one digit")]
 		[PasswordFormat(ErrorMessage = "Password must be at least 8 characters long")]
         public required string Password { get; set; }
 
