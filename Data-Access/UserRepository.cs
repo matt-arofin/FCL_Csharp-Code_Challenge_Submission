@@ -11,11 +11,15 @@ public class UserRepository
     public UserRepository(IConfiguration configuration)
     {
         var connectionString = configuration.GetSection("UserDatabaseSettings:ConnectionString").Value;
+        Console.WriteLine("Connection String: " + connectionString);
         var databaseName = configuration.GetSection("UserDatabaseSettings:DatabaseName").Value;
+        Console.WriteLine("Database Name: " + databaseName);
 
         var client = new MongoClient(connectionString);
+        Console.WriteLine("Colient: " + client);
         var database = client.GetDatabase(databaseName);
         _users = database.GetCollection<User>("users");
+        Console.WriteLine("Users Collection: " + _users);
     }
 
     public User AddUser(User user)
@@ -39,6 +43,12 @@ public class UserRepository
     public User FindUserByUsername(string username)
     {
         var filter = Builders<User>.Filter.Eq(u => u.Username, username);
+        return _users.Find(filter).FirstOrDefault();
+    }
+
+    public User FindUserByEmail(string email)
+    {
+        var filter = Builders<User>.Filter.Eq(u => u.Email, email);
         return _users.Find(filter).FirstOrDefault();
     }
 }

@@ -36,6 +36,15 @@ builder.Services.AddAuthentication().AddJwtBearer(options =>
     };
 });
 
+builder.Services.AddScoped<UserRepository>();
+
+builder.Services.AddSingleton<IMongoClient>(serviceProvider =>
+{
+    var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+    var connectionString = configuration.GetConnectionString("UserDatabaseSettings:ConnectionString");
+    return new MongoClient(connectionString);
+});
+
 builder.Configuration.AddJsonFile("appsettings.json");
 
 var app = builder.Build();

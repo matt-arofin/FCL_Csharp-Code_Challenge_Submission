@@ -16,30 +16,27 @@ namespace Csharp_Code_Challenge_Submission.Controllers
 	public class UserController : ControllerBase
 	{
 		private readonly IConfiguration _configuration;
-        private readonly IMongoCollection<User> _usersCollection;
+        private readonly UserRepository _userRepository;
 
-        public UserController(IConfiguration configuration)
+        public UserController(IConfiguration configuration, UserRepository userRepository)
 		{
 			_configuration = configuration;
-
-            var mongoClient = new MongoClient(_configuration.GetConnectionString("UserDatabaseSettings:ConnectionString"));
-            var database = mongoClient.GetDatabase(_configuration.GetConnectionString("UserDatabaseSettings:DatabaseName"));
-            _usersCollection = database.GetCollection<User>("users");
+            _userRepository = userRepository;
         }
 
 		[HttpPost("register")]
 		public ActionResult<User> Register(UserReq request)
 		{
             var usernameFilter = Builders<User>.Filter.Eq(u => u.Username, request.Username);
-            var usernameUser = _usersCollection.Find(usernameFilter).FirstOrDefault();
-            if (usernameUser != null)
+            var duplicateUser = _userRepository.FindUserByUsername(request.Username);
+            if (duplicateUser != null)
             {
                 return BadRequest("Username already exists.");
             }
 
             var emailFilter = Builders<User>.Filter.Eq(u => u.Email, request.Email);
-            var emailUser = _usersCollection.Find(emailFilter).FirstOrDefault();
-            if (emailUser != null)
+            var duplicateEmail = _userRepository.FindUserByEmail(request.Email);
+            if (duplicateEmail != null)
             {
                 return BadRequest("Email already exists.");
             }
@@ -54,10 +51,7 @@ namespace Csharp_Code_Challenge_Submission.Controllers
 				Email = request.Email
 			};
 
-			var mongoClient = new MongoClient(_configuration.GetConnectionString("UserDatabaseSettings:ConnectionString"));
-            var database = mongoClient.GetDatabase(_configuration.GetConnectionString("UserDatabaseSettings:DatabaseName"));
-            var usersCollection = database.GetCollection<User>("users");
-            usersCollection.InsertOne(newUser);
+            _userRepository.AddUser(newUser);
 
             return Ok(newUser);
 		}
@@ -66,20 +60,16 @@ namespace Csharp_Code_Challenge_Submission.Controllers
 		[HttpPost("login")]
 		public ActionResult<User> Login(UserReq request)
 		{
-            var mongoClient = new MongoClient(_configuration.GetConnectionString("UserDatabaseSettings:ConnectionString"));
-            var database = mongoClient.GetDatabase(_configuration.GetConnectionString("UserDatabaseSettings:DatabaseName"));
-            var usersCollection = database.GetCollection<User>("users");
-
 			var filter = Builders<User>.Filter.Eq(u => u.Username, request.Username);
-			var user = usersCollection.Find(filter).FirstOrDefault();
+			var user = _userRepository.FindUserByUsername(request.Username);
 
 
-            if (user.Username != request.Username || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
+            if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
 			{
 				return BadRequest("Invalid credentials");
 			}
 
-			return Ok(user);
+			return Ok(new { Username = user.Username, Email = user.Email, Token = CreateToken(user)});
 		}
 
 		private string CreateToken(User user)
@@ -110,7 +100,7 @@ namespace Csharp_Code_Challenge_Submission.Controllers
         public ActionResult<User> GetUserInfo(string id)
         {
             var filter = Builders<User>.Filter.Eq(u => u.Id, id);
-            var user = _usersCollection.Find(filter).FirstOrDefault();
+            var user = _userRepository.FindUserById(id);
 
             if (user == null)
             {
@@ -125,22 +115,18 @@ namespace Csharp_Code_Challenge_Submission.Controllers
         public ActionResult<User> UpdateUserInfo(string id, UserReq request)
         {
             var filter = Builders<User>.Filter.Eq(u => u.Id, id);
-            var user = _usersCollection.Find(filter).FirstOrDefault();
-
-            if (user == null)
-            {
-                return NotFound();
-            }
+            var user = _userRepository.FindUserById(id);
 
             user.Username = request.Username;
             user.Email = request.Email;
 
-            if (request.Password != null)
+            if (!string.IsNullOrEmpty(request.Password))
             {
-
+                string passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
+                user.PasswordHash = passwordHash;
             }
 
-            _usersCollection.ReplaceOne(filter, user);
+            _userRepository.UpdateUser(user);
 
             return Ok(new { Username = user.Username, Email = user.Email });
         }
