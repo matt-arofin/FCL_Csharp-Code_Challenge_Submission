@@ -1,14 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using MongoDB.Driver;
 
 namespace Csharp_Code_ChallengeSubmission.Controllers
 {
-    public class HomeController : Controller
+    public class UserController : ControllerBase
     {
-        // GET: /<controller>/
-        public IActionResult Index()
-        {
-            return View();
-        }
+        
     }
 }
 

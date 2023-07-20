@@ -4,6 +4,7 @@ using Swashbuckle.AspNetCore.Filters;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.Configuration;
 using System.Text;
+using MongoDB.Driver;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,6 +35,8 @@ builder.Services.AddAuthentication().AddJwtBearer(options =>
             builder.Configuration.GetSection("AppSettings:Token").Value!))
     };
 });
+
+builder.Configuration.AddJsonFile("appsettings.json");
 
 var app = builder.Build();
 

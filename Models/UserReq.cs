@@ -12,6 +12,7 @@ namespace Csharp_Code_Challenge_Submission.Models
 
         [Required(ErrorMessage = "Username is required")]
         [MinLength(8, ErrorMessage = "Username must be at least 8 characters long")]
+		[PasswordFormat(ErrorMessage = "Password must be at least 8 characters long")]
         public required string Password { get; set; }
 
 		[EmailAddress(ErrorMessage = "Invalid email format")]
@@ -20,7 +21,7 @@ namespace Csharp_Code_Challenge_Submission.Models
 		// Custom password format validation
 		private class PasswordFormatAttribute : ValidationAttribute
 		{
-            public override bool IsValid(object value)
+            public override bool IsValid(object? value)
             {
 				var password = value as string;
 				if (string.IsNullOrEmpty(password))

@@ -1,5 +1,5 @@
-﻿using Csharp_Code_Challenge_Submission.Models;
-//using Csharp_Code_Challenge_Submission.Services;
+﻿//using Csharp_Code_Challenge_Submission.Services;
+using Csharp_Code_Challenge_Submission.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using MongoDB.Driver;
 
 namespace Csharp_Code_Challenge_Submission.Controllers
 {
@@ -51,8 +52,9 @@ namespace Csharp_Code_Challenge_Submission.Controllers
 		{
 			List<Claim> claims = new List<Claim>
 			{
-				new Claim(ClaimTypes.Name, user.Username)
-			};
+				new Claim(ClaimTypes.Name, user.Username),
+				new Claim(ClaimTypes.Role, "User")
+            };
 
 			var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
 				_configuration.GetSection("AppSettings:Token").Value!));
