@@ -47,13 +47,13 @@ namespace Csharp_Code_Challenge_Submission.Controllers
 			var newUser = new User
 			{
 				Username = request.Username,
-				PasswordHash = passwordHash,
+				//PasswordHash = passwordHash,
 				Email = request.Email
 			};
 
             _userRepository.AddUser(newUser);
 
-            return Ok(newUser);
+            return Ok(new { message = "User successfully registered", newUser });
 		}
 
 
@@ -69,7 +69,7 @@ namespace Csharp_Code_Challenge_Submission.Controllers
 				return BadRequest("Invalid credentials");
 			}
 
-			return Ok(new { Username = user.Username, Email = user.Email, Token = CreateToken(user)});
+			return Ok(new { Id = user.Id, Token = CreateToken(user)});
 		}
 
 		private string CreateToken(User user)
