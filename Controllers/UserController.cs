@@ -47,13 +47,13 @@ namespace Csharp_Code_Challenge_Submission.Controllers
 			var newUser = new User
 			{
 				Username = request.Username,
-				//PasswordHash = passwordHash,
+				PasswordHash = passwordHash,
 				Email = request.Email
 			};
 
             _userRepository.AddUser(newUser);
 
-            return Ok(new { message = "User successfully registered", newUser });
+            return Ok(new { message = "User successfully registered", newUser.Username, newUser.Email });
 		}
 
 
