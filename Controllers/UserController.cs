@@ -117,18 +117,36 @@ namespace Csharp_Code_Challenge_Submission.Controllers
             var filter = Builders<User>.Filter.Eq(u => u.Id, id);
             var user = _userRepository.FindUserById(id);
 
-            user.Username = request.Username;
-            user.Email = request.Email;
+            bool isUpdated = false;
+
+            if (!string.IsNullOrEmpty(request.Username))
+            {
+                user.Username = request.Username;
+                isUpdated = true;
+            }
+
+            if (!string.IsNullOrEmpty(request.Email))
+            {
+                user.Email = request.Email;
+                isUpdated = true;
+            }
 
             if (!string.IsNullOrEmpty(request.Password))
             {
                 string passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
                 user.PasswordHash = passwordHash;
+                isUpdated = true;
             }
 
-            _userRepository.UpdateUser(user);
-
-            return Ok(new { Username = user.Username, Email = user.Email });
+            if (isUpdated)
+            {
+                _userRepository.UpdateUser(user);
+                return Ok(new { Message = "Update successful.", UpdatedField = request.Username ?? request.Email });
+            }
+            else
+            {
+                return BadRequest("No fields to update");
+            }            
         }
     }
 }
